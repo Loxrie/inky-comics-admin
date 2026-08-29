@@ -14,6 +14,7 @@ import InputLabel from "@mui/material/InputLabel";
 import Button from "@mui/material/Button";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
+import UpgradeIcon from "@mui/icons-material/Upgrade";
 
 import { useFetcher } from "@modern-js/runtime/router";
 
@@ -30,8 +31,12 @@ type NewQuery = {
     random: boolean;
 };
 
+type DirtyPair = { [k: number]: Query };
+
 export default function Queries({ configuration }: Props) {
     const fetcher = useFetcher();
+
+    const [dirtyFields, setDirtyFields] = React.useState<DirtyPair>([]);
 
     const [newQuery, setNewQuery] = React.useState<NewQuery>({
         type: "",
@@ -46,21 +51,44 @@ export default function Queries({ configuration }: Props) {
         field: string,
         index: number,
     ) => {
-        const query: Query = configuration.comics.queries[index];
-        switch (field) {
-            case "type":
-                query.type = event.target.value;
-                break;
-            case "query":
-                query.query = event.target.value;
-                break;
-            case "random":
-                query.random = (
-                    event as React.ChangeEvent<HTMLInputElement>
-                ).target.checked;
-                break;
-        }
+        setDirtyFields((prev) => {
+            const next = { ...prev };
 
+            if (!next[index]) {
+                next[index] = { ...configuration.comics.queries[index] };
+            }
+
+            const kei = next[index];
+
+            switch (field) {
+                case "type":
+                    kei.type = event.target.value;
+                    break;
+                case "query":
+                    kei.query = event.target.value;
+                    break;
+                case "random":
+                    kei.random = (
+                        event as React.ChangeEvent<HTMLInputElement>
+                    ).target.checked;
+                    break;
+            }
+
+            const yuri = configuration.comics.queries[index];
+            if (
+                kei.query === yuri.query &&
+                kei.type === yuri.type &&
+                (kei.random ?? "") === (yuri.random ?? "1")
+            ) {
+                delete next[index];
+            }
+
+            return next;
+        });
+    };
+
+    const handleUpdateQuery = (index: number) => {
+        const query = dirtyFields[index];
         fetcher.submit(
             {
                 action: "update-query",
@@ -69,6 +97,12 @@ export default function Queries({ configuration }: Props) {
             },
             { method: "post" },
         );
+
+        setDirtyFields((prev) => {
+            let next = { ...prev };
+            delete next[index];
+            return next;
+        });
     };
 
     const handleDeleteQuery = (index: number) => {
@@ -81,7 +115,7 @@ export default function Queries({ configuration }: Props) {
         );
     };
 
-    const handleQueryAdd = (
+    const handleAddQuery = (
         event:
             | SelectChangeEvent
             | React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -106,7 +140,7 @@ export default function Queries({ configuration }: Props) {
         });
     };
 
-    const handleQueryAddSubmit = () => {
+    const handleAddQuerySubmit = () => {
         if (newQuery.query && newQuery.type) {
             fetcher.submit(
                 {
@@ -133,11 +167,13 @@ export default function Queries({ configuration }: Props) {
     return (
         <section className="queries">
             {configuration.comics.queries.map((q, index) => {
+                const query = dirtyFields[index] ?? q;
                 return (
                     <Stack
                         direction="row"
                         divider={<Divider orientation="vertical" flexItem />}
                         spacing={2}
+                        key={index}
                     >
                         <FormControl fullWidth className="list" key={index}>
                             <InputLabel id={`label-type-${index}`}>
@@ -147,7 +183,7 @@ export default function Queries({ configuration }: Props) {
                                 id={`type-${index}`}
                                 labelId={`label-type-${index}`}
                                 className="fit-content"
-                                value={q.type}
+                                value={query.type}
                                 onChange={(e) =>
                                     handleQueryChange(e, "type", index)
                                 }
@@ -160,7 +196,7 @@ export default function Queries({ configuration }: Props) {
                                 id={`query-${index}`}
                                 className="fit-content"
                                 label="Query"
-                                value={q.query}
+                                value={query.query}
                                 onChange={(e) =>
                                     handleQueryChange(e, "query", index)
                                 }
@@ -171,7 +207,7 @@ export default function Queries({ configuration }: Props) {
                                     control={
                                         <Switch
                                             id={`random-switch-${index}`}
-                                            checked={q.random}
+                                            checked={query.random}
                                             onChange={(e) =>
                                                 handleQueryChange(
                                                     e,
@@ -192,14 +228,26 @@ export default function Queries({ configuration }: Props) {
                             )}
                         </FormControl>
 
-                        <Button
-                            startIcon={<DeleteIcon />}
-                            onClick={() => handleDeleteQuery(index)}
-                            disabled={fetcher.state !== "idle"}
-                            color="error"
-                        >
-                            Delete
-                        </Button>
+                        {dirtyFields[index] && (
+                            <Button
+                                startIcon={<UpgradeIcon />}
+                                onClick={() => handleUpdateQuery(index)}
+                                disabled={fetcher.state !== "idle"}
+                                color="secondary"
+                            >
+                                Update
+                            </Button>
+                        )}
+                        {!dirtyFields[index] && (
+                            <Button
+                                startIcon={<DeleteIcon />}
+                                onClick={() => handleDeleteQuery(index)}
+                                disabled={fetcher.state !== "idle"}
+                                color="error"
+                            >
+                                Delete
+                            </Button>
+                        )}
                     </Stack>
                 );
             })}
@@ -215,7 +263,7 @@ export default function Queries({ configuration }: Props) {
                         labelId={`label-type-new`}
                         className="fit-content"
                         value={newQuery.type ?? ""}
-                        onChange={(e) => handleQueryAdd(e, "type")}
+                        onChange={(e) => handleAddQuery(e, "type")}
                     >
                         {["", ...queryTypes].map((t) => (
                             <MenuItem value={t}>{t}</MenuItem>
@@ -226,7 +274,7 @@ export default function Queries({ configuration }: Props) {
                         className="fit-content"
                         label="Query"
                         value={newQuery.query ?? ""}
-                        onChange={(e) => handleQueryAdd(e, "query")}
+                        onChange={(e) => handleAddQuery(e, "query")}
                     />
                     {newQuery.type == "Volume" && (
                         <FormControlLabel
@@ -236,7 +284,7 @@ export default function Queries({ configuration }: Props) {
                                     id={`random-switch-new`}
                                     checked={Boolean(newQuery.random)}
                                     onChange={(e) =>
-                                        handleQueryAdd(e, "random")
+                                        handleAddQuery(e, "random")
                                     }
                                     slotProps={{
                                         input: {
@@ -253,7 +301,7 @@ export default function Queries({ configuration }: Props) {
 
                 <Button
                     startIcon={<AddIcon />}
-                    onClick={handleQueryAddSubmit}
+                    onClick={handleAddQuerySubmit}
                     disabled={fetcher.state !== "idle"}
                     style={{ minWidth: "85px" }}
                     variant="contained"

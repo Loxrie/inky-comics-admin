@@ -2,6 +2,8 @@ import { ActionFunctionArgs } from "@modern-js/runtime/router";
 import { readFileSync, openSync, closeSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
+import { configFile } from "../config/settings.json";
+
 let newComicPleaseMessage = "";
 
 export type Query = {
@@ -43,10 +45,7 @@ export type Status = {
 };
 
 export const loader = () => {
-    const file = readFileSync(
-        resolve(__dirname, "../../../comics/main/settings.json"),
-        "utf8",
-    );
+    const file = readFileSync(resolve(__dirname, configFile), "utf8");
 
     const status: Status = {};
     const configuration: Configuration = JSON.parse(file) as Configuration;
@@ -71,17 +70,14 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         const index = formData.get("index") as string;
         const data = formData.get("query") as string;
 
-        const file = readFileSync(
-            resolve(__dirname, "../../../comics/main/settings.json"),
-            "utf8",
-        );
+        const file = readFileSync(resolve(__dirname, configFile), "utf8");
 
         const configuration: Configuration = JSON.parse(file) as Configuration;
 
         configuration.comics.queries[Number.parseInt(index)] = JSON.parse(data);
 
         writeFileSync(
-            resolve(__dirname, "../../../comics/main/settings.json"),
+            resolve(__dirname, configFile),
             JSON.stringify(configuration, null, 2),
         );
     }
@@ -89,10 +85,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     if (action === "delete-query") {
         const indexParam = formData.get("index") as string;
 
-        const file = readFileSync(
-            resolve(__dirname, "../../../comics/main/settings.json"),
-            "utf8",
-        );
+        const file = readFileSync(resolve(__dirname, configFile), "utf8");
 
         const index = Number.parseInt(indexParam);
         const configuration: Configuration = JSON.parse(file) as Configuration;
@@ -104,7 +97,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         );
 
         writeFileSync(
-            resolve(__dirname, "../../../comics/main/settings.json"),
+            resolve(__dirname, configFile),
             JSON.stringify(configuration, null, 2),
         );
     }
@@ -116,17 +109,14 @@ export const action = async ({ request }: ActionFunctionArgs) => {
             return { success: false };
         }
 
-        const file = readFileSync(
-            resolve(__dirname, "../../../comics/main/settings.json"),
-            "utf8",
-        );
+        const file = readFileSync(resolve(__dirname, configFile), "utf8");
 
         const configuration: Configuration = JSON.parse(file) as Configuration;
 
         configuration.comics.queries.push(query);
 
         writeFileSync(
-            resolve(__dirname, "../../../comics/main/settings.json"),
+            resolve(__dirname, configFile),
             JSON.stringify(configuration, null, 2),
         );
     }

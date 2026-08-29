@@ -7,12 +7,13 @@ import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Box from "@mui/material/Box";
 
-import type { Configuration, Status, Query } from "./page.data";
+import type { Configuration, Status } from "./page.data";
 
 import "./index.css";
 import NewComicPlease from "@/components/NewComicPlease";
 import Server from "@/components/Server";
 import Queries from "@/components/Queries";
+import ImageProcessing from "@/components/ImageProcessing";
 
 type LoaderData = {
     status: Status;
@@ -56,12 +57,14 @@ const Index = () => {
                         <Tab value="newComicPlease" label="Update Frame" />
                         <Tab value="server" label="Server" />
                         <Tab value="queries" label="Comics" />
+                        <Tab value="processing" label="Image Processing" />
                     </Tabs>
                 </Box>
                 <div className="components">
                     {value === "newComicPlease" && <NewComicPlease {...data} />}
                     {value === "server" && <Server {...data} />}
                     {value === "queries" && <Queries {...data} />}
+                    {value === "processing" && <ImageProcessing {...data} />}
                 </div>
                 <Box className="status">{JSON.stringify(data.status)}</Box>
             </main>

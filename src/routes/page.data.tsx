@@ -121,5 +121,21 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         );
     }
 
+    if (action === "update-image") {
+        const data = formData.get("image") as string;
+        const image = JSON.parse(data);
+
+        const file = readFileSync(resolve(__dirname, configFile), "utf8");
+
+        const configuration: Configuration = JSON.parse(file) as Configuration;
+
+        configuration.image = image;
+
+        writeFileSync(
+            resolve(__dirname, configFile),
+            JSON.stringify(configuration, null, 2),
+        );
+    }
+
     return { success: true };
 };

@@ -52,13 +52,28 @@ main {
     gap: 16px;
 }
 
-.queries {
+.components {
+    width: 100%;
+}
+
+.described {
+    display: flex;
+    flex-direction: row;
+    gap: 32px;
+}
+
+.component {
     display: flex;
     flex-direction: column;
     gap: 16px;
+    flex-basis: 50%;
 }
 
-.queries .list {
+.component p {
+    width: 100%;
+}
+
+.component .list {
     display: flex;
     flex-direction: row;
     gap: 8px;

@@ -5,7 +5,7 @@ import Divider from "@mui/material/Divider";
 
 import FormControl from "@mui/material/FormControl";
 import FormControlLabel from "@mui/material/FormControlLabel";
-import Switch from "@mui/material/Switch";
+import Checkbox from "@mui/material/Checkbox";
 import TextField from "@mui/material/TextField";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
@@ -165,7 +165,7 @@ export default function Queries({ configuration }: Props) {
     }, [] as string[]);
 
     return (
-        <section className="queries">
+        <section className="component">
             {configuration.comics.queries.map((q, index) => {
                 const query = dirtyFields[index] ?? q;
                 return (
@@ -205,8 +205,8 @@ export default function Queries({ configuration }: Props) {
                                 <FormControlLabel
                                     id={`random-label-${index}`}
                                     control={
-                                        <Switch
-                                            id={`random-switch-${index}`}
+                                        <Checkbox
+                                            id={`random-checkbox-${index}`}
                                             checked={query.random}
                                             onChange={(e) =>
                                                 handleQueryChange(
@@ -280,8 +280,8 @@ export default function Queries({ configuration }: Props) {
                         <FormControlLabel
                             id={`random-label-new`}
                             control={
-                                <Switch
-                                    id={`random-switch-new`}
+                                <Checkbox
+                                    id={`random-checkbox-new`}
                                     checked={Boolean(newQuery.random)}
                                     onChange={(e) =>
                                         handleAddQuery(e, "random")
